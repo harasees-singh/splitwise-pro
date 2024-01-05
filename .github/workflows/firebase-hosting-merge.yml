@@ -17,3 +17,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPLITWISE_PRO_FLUTTER_APP }}'
           channelId: live
           projectId: splitwise-pro-flutter-app
+        env:
+            FIREBASE_CLI_EXPERIMENTS: webframeworks
