@@ -1,15 +1,18 @@
 import 'dart:typed_data';
-
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:splitwise_pro/widgets/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({Key? key}) : super(key: key);
+  const AuthScreen({Key? key, required this.releaseLockPostSuccessfulSignUp}) : super(key: key);
+
+  final Function releaseLockPostSuccessfulSignUp;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -24,8 +27,20 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  void _onPickImage(Uint8List imageBytes) {
-    _imageBytes = imageBytes;
+  Future<Uint8List?> _getImageBytesCondensed(Uint8List? imageBytes) async {
+    if (imageBytes == null) {
+      return null;
+    }
+    return await FlutterImageCompress.compressWithList(
+      imageBytes,
+      minHeight: 1024,
+      minWidth: 1024,
+      quality: 96,
+    );
+  }
+
+  void _onPickImage(Uint8List imageBytes) async {
+    _imageBytes = await _getImageBytesCondensed(imageBytes);
   }
 
   void _submit() async {
@@ -55,6 +70,8 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailAddress,
           password: _password,
         );
+
+        widget.releaseLockPostSuccessfulSignUp();
         // login user
       } else {
         final userCredentails = await _firebase.createUserWithEmailAndPassword(
@@ -78,6 +95,8 @@ class _AuthScreenState extends State<AuthScreen> {
           'email': _emailAddress,
           'image_url': imageURl,
         });
+
+        widget.releaseLockPostSuccessfulSignUp();
       }
     } on FirebaseAuthException catch (error) {
       if (context.mounted) {
@@ -89,12 +108,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         );
       }
-    }
-    if (context.mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    } 
   }
 
   @override
@@ -109,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 Container(
                   margin: const EdgeInsets.all(12),
-                  width: 150,
+                  width: kIsWeb ? 100 : 170,
                   child: Image.asset(
                     'assets/images/money_bag.png',
                   ),
