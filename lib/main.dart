@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:splitwise_pro/screens/auth.dart';
+import 'package:splitwise_pro/main_page.dart';
 import 'firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -44,9 +44,9 @@ class MyApp extends StatelessWidget {
             foregroundColor: kDarkColorScheme.onPrimary),
         textTheme: const TextTheme().copyWith(
           titleLarge: TextStyle(
-              fontSize: 30,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: kDarkColorScheme.secondary),
+              color: kDarkColorScheme.onPrimary),
         ),
       ),
       theme: ThemeData().copyWith(
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: const AuthScreen(),
+      home: const MainPage(),
     );
   }
 }
