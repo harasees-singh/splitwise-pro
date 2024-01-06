@@ -2,6 +2,9 @@
 *firebase_options.dart
 *.env
 
+# ios related
+*GoogleService-Info.plist
+
 # Miscellaneous
 *.class
 *.log
