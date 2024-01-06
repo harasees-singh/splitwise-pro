@@ -1,22 +1,30 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:splitwise_pro/screens/auth.dart';
 import 'firebase_options.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  if (kIsWeb){
+    final auth = FirebaseAuth.instanceFor(app: Firebase.app());
+    auth.setPersistence(Persistence.LOCAL);
+  }
   runApp(const MyApp());
 }
 
 var kColorScheme =
-    ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 4, 80, 143));
+    ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 2, 69, 125));
 
 var kDarkColorScheme = ColorScheme.fromSeed(
     seedColor: const Color.fromARGB(255, 0, 46, 67),
-    brightness: Brightness.dark);
+    brightness: Brightness.dark
+  );
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -28,6 +36,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
     ]);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       darkTheme: ThemeData.dark().copyWith(
         colorScheme: kDarkColorScheme,
         appBarTheme: const AppBarTheme().copyWith(
@@ -53,14 +62,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Firebase'),
-        ),
-        body: const Center(
-          child: Text('splitwise pro'),
-        ),
-      ),
+      home: const AuthScreen(),
     );
   }
 }
