@@ -14,13 +14,9 @@ class ImagePicker extends StatefulWidget {
 
 class _ImagePickerState extends State<ImagePicker> {
   Uint8List? _imageBytes;
-  bool _imageIsLoading = false;
   final imagePickerClient = ImagePickerClient();
 
   void _pickImage() {
-    setState(() {
-      _imageIsLoading = true;
-    });
     try {
       if (kIsWeb) {
         imagePickerClient.pickImageAsBytes().then((imageFile) {
@@ -53,9 +49,6 @@ class _ImagePickerState extends State<ImagePicker> {
         );
       }
     }
-    setState(() {
-      _imageIsLoading = false;
-    });
   }
 
   @override
@@ -97,10 +90,13 @@ class _ImagePickerState extends State<ImagePicker> {
               : null,
         ),
         Positioned.fill(
-          child: IconButton(
-            icon: Icon(Icons.add_a_photo,
-                color: Theme.of(context).colorScheme.onPrimary),
-            onPressed: _pickImage,
+          child: Opacity(
+            opacity: _imageBytes == null ? 1 : 0,
+            child: IconButton(
+              icon: Icon(Icons.add_a_photo,
+                  color: Theme.of(context).colorScheme.onPrimary),
+              onPressed: _pickImage,
+            ),
           ),
         )
       ],
