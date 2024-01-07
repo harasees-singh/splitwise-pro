@@ -71,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _password,
         );
 
-        widget.releaseLockPostSuccessfulSignUp();
+        await widget.releaseLockPostSuccessfulSignUp();
         // login user
       } else {
         final userCredentails = await _firebase.createUserWithEmailAndPassword(
@@ -82,21 +82,25 @@ class _AuthScreenState extends State<AuthScreen> {
         final storageRef = FirebaseStorage.instance
             .ref()
             .child('user_images')
-            .child('${userCredentails.user!.uid}.jpg');
+            .child('${userCredentails.user!.email}.jpg');
 
         await storageRef.putData(_imageBytes!);
         final imageURl = await storageRef.getDownloadURL();
 
+        await userCredentails.user!.updateDisplayName(_username);
+        await userCredentails.user!.updatePhotoURL(imageURl);
+
         await FirebaseFirestore.instance
             .collection('users')
-            .doc(userCredentails.user!.uid)
+            .doc(userCredentails.user!.email)
             .set({
           'username': _username,
           'email': _emailAddress,
           'image_url': imageURl,
+          'timestamp': Timestamp.now(),
         });
 
-        widget.releaseLockPostSuccessfulSignUp();
+        await widget.releaseLockPostSuccessfulSignUp();
       }
     } on FirebaseAuthException catch (error) {
       if (context.mounted) {

@@ -17,7 +17,8 @@ class _MainPageState extends State<MainPage> {
   late Widget authScreen;
   late Widget verifyEmailScreen;
 
-  void _releaseLockPostSuccessfulSignUp() {
+  void _releaseLockPostSuccessfulSignUp() async {
+    await FirebaseAuth.instance.currentUser!.reload();
     setState(() {
       _releaseLock = true;
     });
@@ -36,7 +37,7 @@ class _MainPageState extends State<MainPage> {
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          if (snapshot.hasData && _releaseLock) {
+          if (snapshot.hasData && (FirebaseAuth.instance.currentUser!.emailVerified || _releaseLock)) {
             return verifyEmailScreen;
           }
           return authScreen;
