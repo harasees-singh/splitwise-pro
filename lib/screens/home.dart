@@ -1,8 +1,11 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/screens/add_transaction.dart';
+import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -47,23 +50,50 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             if (!snapshots.hasData || snapshots.data!.docs.isEmpty) {
-              return const Center(
-                child: Text('No messages yet!'),
+              return Center(
+                child: Text(
+                  'No expenses yet!',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(color: Theme.of(context).colorScheme.secondary),
+                ),
               );
             }
 
             if (snapshots.hasError) {
-              return const Center(
-                child: Text('Something went wrong!'),
+              return Center(
+                child: Text('Something went wrong!',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
               );
             }
 
             return ListView.builder(
               itemCount: snapshots.data!.docs.length,
               itemBuilder: (ctx, index) {
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  child: Text(snapshots.data!.docs[index]['amount'].toString()),
+                String paidByImageUrl = snapshots.data!.docs[index]['paidByImageUrl'];
+                Timestamp timestamp = snapshots.data!.docs[index]['timestamp'];
+                num totalAmount = snapshots.data!.docs[index]['amount'];
+                dynamic splitMap = snapshots.data!.docs[index]['split'];
+                num amountLent = ((splitMap.containsKey(
+                            FirebaseAuth.instance.currentUser!.email)
+                        ? splitMap[FirebaseAuth.instance.currentUser!.email]!
+                        : 0) as num) *
+                    -1;
+                String paidByEmail = snapshots.data!.docs[index]['paidByEmail'];
+                if (paidByEmail == FirebaseAuth.instance.currentUser!.email) {
+                  amountLent = totalAmount + amountLent;
+                }
+
+                return TransactionTile(
+                  paidByImageUrl: paidByImageUrl,
+                  paidByEmail: snapshots.data!.docs[index]['paidByEmail'],
+                  paidByUsername: snapshots.data!.docs[index]['paidByUsername'],
+                  description: snapshots.data!.docs[index]['description'],
+                  amount: totalAmount,
+                  amountLent: amountLent,
+                  timestamp: timestamp,
                 );
               },
             );

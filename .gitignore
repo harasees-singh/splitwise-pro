@@ -1,6 +1,7 @@
 # Firebase related
 *firebase_options.dart
 *.env
+*test.js
 
 # ios related
 *GoogleService-Info.plist
