@@ -28,7 +28,7 @@ class UserAvatar extends StatelessWidget {
                       height: radius! * 2,
                       width: radius! * 2,
                       child: CircularProgressIndicator(
-                        strokeWidth: 1,
+                        strokeWidth: 4,
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
