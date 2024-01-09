@@ -62,8 +62,8 @@ class TransactionTile extends StatelessWidget {
           children: [
             Text(
               amountLent.toString()[0] == '-'
-                  ? amountLent.toStringAsFixed(1).toString().substring(1)
-                  : amountLent.toStringAsFixed(1).toString(),
+                  ? '₹${amountLent.toStringAsFixed(1).toString().substring(1)}'
+                  : '₹${amountLent.toStringAsFixed(1)}',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: amountLent > 0
                       ? const Color.fromARGB(255, 143, 211, 145)
@@ -72,7 +72,7 @@ class TransactionTile extends StatelessWidget {
                           : const Color.fromARGB(255, 219, 121, 114))),
             ),
             Text(
-              amount.toDouble().toString(),
+              '₹${amount.toDouble()}',
               style: Theme.of(context)
                   .textTheme
                   .titleSmall!

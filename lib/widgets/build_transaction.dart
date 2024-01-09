@@ -111,11 +111,15 @@ class _BuildTransactionState extends State<BuildTransaction> {
       _isLoading = true;
     });
 
-    Map<String, double> splitDetails = {
+    Map<String, Map<String, dynamic>> splitDetails = {
       for (UserFromFireStore user in widget.users)
         if (_transactionSplit[user]!.first)
-          user.email: double.tryParse(_transactionSplit[user]!.second) ??
-              (amount / _numberOfPeopleChecked)
+          user.email: {
+            'amount' : double.tryParse(_transactionSplit[user]!.second) ??
+              (amount / _numberOfPeopleChecked),
+            'username' : user.username,
+            'imageUrl' : user.imageUrl,
+          } 
     };
     // persist data to firestore;
     try {
@@ -124,6 +128,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
       'description': _descriptionController.text,
       'addedByEmail': FirebaseAuth.instance.currentUser!.email,
       'addedByUsername' : FirebaseAuth.instance.currentUser!.displayName,
+      'addedByImageUrl' : FirebaseAuth.instance.currentUser!.photoURL,
       'paidByEmail': _userWhoPaid.email,
       'paidByUsername': _userWhoPaid.username,
       'paidByImageUrl': _userWhoPaid.imageUrl,
