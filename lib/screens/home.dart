@@ -15,6 +15,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  void logout () {
+    showDialog(context: context, builder: (ctx) {
+      return AlertDialog(
+        title: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+        content: Text('We are sorry to see you go :(', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+        actions: [
+          TextButton(onPressed: () {
+            FirebaseAuth.instance.signOut();
+            Navigator.of(context).pop();
+          }, child: const Text('Logout')),
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: const Text('Cancel')),
+        ],
+      );
+    }); 
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -30,9 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             IconButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
+              onPressed: logout,
               icon: const Icon(Icons.logout),
             ),
           ],
@@ -82,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView.builder(
                       itemCount: snapshots.data!.docs.length,
                       itemBuilder: (ctx, index) {
+                        String id = snapshots.data!.docs[index].id;
                         String paidByImageUrl =
                             snapshots.data!.docs[index]['paidByImageUrl'];
                         Timestamp timestamp =
@@ -102,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         
                         return TransactionTile(
+                          id: id,
                           paidByImageUrl: paidByImageUrl,
                           paidByEmail: snapshots.data!.docs[index]['paidByEmail'],
                           paidByUsername: snapshots.data!.docs[index]
