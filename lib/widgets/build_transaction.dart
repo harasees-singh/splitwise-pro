@@ -111,18 +111,27 @@ class _BuildTransactionState extends State<BuildTransaction> {
       _isLoading = true;
     });
 
-    Map<String, double> splitDetails = {
+    Map<String, Map<String, dynamic>> splitDetails = {
       for (UserFromFireStore user in widget.users)
         if (_transactionSplit[user]!.first)
-          user.email: double.tryParse(_transactionSplit[user]!.second) ??
-              (amount / _numberOfPeopleChecked)
+          user.email: {
+            'amount' : double.tryParse(_transactionSplit[user]!.second) ??
+              (amount / _numberOfPeopleChecked),
+            'username' : user.username,
+            'imageUrl' : user.imageUrl,
+          } 
     };
     // persist data to firestore;
     try {
       await FirebaseFirestore.instance.collection('transactions').add({
       'amount': amount,
       'description': _descriptionController.text,
-      'paidBy': _userWhoPaid.email,
+      'addedByEmail': FirebaseAuth.instance.currentUser!.email,
+      'addedByUsername' : FirebaseAuth.instance.currentUser!.displayName,
+      'addedByImageUrl' : FirebaseAuth.instance.currentUser!.photoURL,
+      'paidByEmail': _userWhoPaid.email,
+      'paidByUsername': _userWhoPaid.username,
+      'paidByImageUrl': _userWhoPaid.imageUrl,
       'splitEqually': _splitEqually,
       'split': splitDetails,
       'timestamp': Timestamp.now(),
@@ -277,7 +286,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
             ),
             const SizedBox(height: 20),
             Text(
-              '${_userWhoPaid.username} paid ₹ ${double.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || double.tryParse(_amount) == null ? 0 : double.tryParse(_amount)! / _numberOfPeopleChecked} each' : 'to be split unequally'}',
+              '${_userWhoPaid.username} paid ₹ ${double.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || double.tryParse(_amount) == null ? 0 : (num.tryParse(_amount)! / _numberOfPeopleChecked).toStringAsFixed(1)} each' : 'to be split unequally'}',
               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             ),
             const SizedBox(height: 20),

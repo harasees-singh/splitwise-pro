@@ -33,8 +33,8 @@ class _AuthScreenState extends State<AuthScreen> {
     }
     return await FlutterImageCompress.compressWithList(
       imageBytes,
-      minHeight: 1024,
-      minWidth: 1024,
+      minHeight: 512,
+      minWidth: 512,
       quality: 96,
     );
   }
