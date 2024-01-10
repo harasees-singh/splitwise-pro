@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class TransactionTile extends StatefulWidget {
@@ -14,7 +15,8 @@ class TransactionTile extends StatefulWidget {
       required this.paidByEmail,
       required this.paidByImageUrl,
       required this.timestamp,
-      required this.id});
+      required this.id,
+      required this.status});
 
   final String paidByEmail;
   final String paidByUsername;
@@ -24,6 +26,7 @@ class TransactionTile extends StatefulWidget {
   final num amountLent;
   final Timestamp timestamp;
   final String id;
+  final TransactionStatus status;
 
   @override
   State<TransactionTile> createState() => _TransactionTileState();
@@ -36,8 +39,20 @@ class _TransactionTileState extends State<TransactionTile> {
 
   @override
   Widget build(BuildContext context) {
+
+    Widget leadingWidget = UserAvatar(imageURL: widget.paidByImageUrl,);
+    if (widget.status == TransactionStatus.pending) {
+      leadingWidget = const Padding(padding: EdgeInsets.all(2), child: CircularProgressIndicator());
+    }
+    if (widget.status == TransactionStatus.error) {
+      leadingWidget = const Icon(Icons.error, color: Colors.red, size: 40,);
+    }
+
     return Dismissible(
       dragStartBehavior: DragStartBehavior.down,
+      direction: widget.status == TransactionStatus.completed
+          ? DismissDirection.horizontal
+          : DismissDirection.none,
       movementDuration: const Duration(milliseconds: 500),
       background: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -91,21 +106,19 @@ class _TransactionTileState extends State<TransactionTile> {
       },
       key: ValueKey(widget.id),
       child: ListTile(
-        leading: UserAvatar(
-          imageURL: widget.paidByImageUrl,
-        ),
+        leading: leadingWidget,
         title: Text(
-          widget.paidByUsername,
+          widget.description,
           style: Theme.of(context)
               .textTheme
-              .titleLarge!
+              .bodyLarge!
               .copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.description,
+              widget.paidByUsername,
               style: Theme.of(context)
                   .textTheme
                   .titleMedium!

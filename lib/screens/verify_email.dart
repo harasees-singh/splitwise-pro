@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/screens/home.dart';
@@ -27,14 +28,21 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   Future checkEmailVerified() async {
     await FirebaseAuth.instance.currentUser!.reload();
+
+    if (FirebaseAuth.instance.currentUser!.emailVerified) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.email)
+          .set({
+        'verified': true,
+      }, SetOptions(merge: true));
+      _timer?.cancel();
+    }
+
     if (context.mounted) {
       setState(() {
         _isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
       });
-    }
-
-    if (_isEmailVerified) {
-      _timer?.cancel();
     }
   }
 
