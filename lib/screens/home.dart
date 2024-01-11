@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/screens/add_transaction.dart';
+import 'package:splitwise_pro/util/enums/transaction_status.dart';
+import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/widgets/summary_card.dart';
 import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
@@ -15,6 +17,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  void logout () {
+    showDialog(context: context, builder: (ctx) {
+      return AlertDialog(
+        title: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+        content: Text('We are sorry to see you go :(', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+        actions: [
+          TextButton(onPressed: () {
+            FirebaseAuth.instance.signOut();
+            Navigator.of(context).pop();
+          }, child: const Text('Logout')),
+          TextButton(onPressed: () {
+            Navigator.of(context).pop();
+          }, child: const Text('Cancel')),
+        ],
+      );
+    }); 
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -30,9 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             IconButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
+              onPressed: logout,
               icon: const Icon(Icons.logout),
             ),
           ],
@@ -82,6 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView.builder(
                       itemCount: snapshots.data!.docs.length,
                       itemBuilder: (ctx, index) {
+                        TransactionStatus status = TransactionStatus.values.byName(snapshots.data!.docs[index]['status']);
+                        TransactionType type = TransactionType.values.byName(snapshots.data!.docs[index]['type']);
+                        String id = snapshots.data!.docs[index].id;
                         String paidByImageUrl =
                             snapshots.data!.docs[index]['paidByImageUrl'];
                         Timestamp timestamp =
@@ -102,13 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         
                         return TransactionTile(
+                          id: id,
+                          status: status,
+                          type: type,
                           paidByImageUrl: paidByImageUrl,
                           paidByEmail: snapshots.data!.docs[index]['paidByEmail'],
                           paidByUsername: snapshots.data!.docs[index]
                               ['paidByUsername'],
                           description: snapshots.data!.docs[index]['description'],
-                          amount: totalAmount,
-                          amountLent: amountLent,
+                          amount: totalAmount.toInt(),
+                          amountLent: amountLent.toInt(),
                           timestamp: timestamp,
                         );
                       },

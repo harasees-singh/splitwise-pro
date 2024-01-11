@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/models/pair.dart';
 import 'package:splitwise_pro/models/user_from_firestore.dart';
+import 'package:splitwise_pro/util/enums/transaction_status.dart';
+import 'package:splitwise_pro/util/enums/transaction_type.dart';
+import 'package:splitwise_pro/util/helper/add_transaction.dart';
 import 'package:splitwise_pro/widgets/transaction_split.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -17,12 +20,13 @@ class BuildTransaction extends StatefulWidget {
 }
 
 class _BuildTransactionState extends State<BuildTransaction> {
+  late List<UserFromFireStore> verifiedUsers;
   final Map<UserFromFireStore, Pair<bool, String>> _transactionSplit = {};
   late UserFromFireStore _userWhoPaid;
   final _descriptionController = TextEditingController();
   int _numberOfPeopleChecked = 0;
   String _amount = '';
-  bool _splitEqually = false;
+  bool _splitEqually = true;
   bool _isLoading = false;
 
   void _updateSplit(UserFromFireStore user, String amount) {
@@ -43,12 +47,12 @@ class _BuildTransactionState extends State<BuildTransaction> {
   }
 
   void _recordTransaction() async {
-    double? amount = double.tryParse(_amount);
+    int? amount = int.tryParse(_amount);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter a valid amount > 0'),
+          content: const Text('Please enter a valid integer amount > 0'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -75,18 +79,18 @@ class _BuildTransactionState extends State<BuildTransaction> {
       return;
     }
     if (!_splitEqually) {
-      double total = 0;
-      for (UserFromFireStore user in widget.users) {
+      int total = 0;
+      for (UserFromFireStore user in verifiedUsers) {
         if (_transactionSplit[user]!.first == false) {
           continue;
         }
-        double? amount = double.tryParse(_transactionSplit[user]!.second);
+        int? amount = int.tryParse(_transactionSplit[user]!.second);
         if (amount == null || amount <= 0) {
           ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
-                  'Please enter a valid amount for all selected users'),
+                  'Please enter a valid integer amount for all selected users'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -112,31 +116,34 @@ class _BuildTransactionState extends State<BuildTransaction> {
     });
 
     Map<String, Map<String, dynamic>> splitDetails = {
-      for (UserFromFireStore user in widget.users)
+      for (UserFromFireStore user in verifiedUsers)
         if (_transactionSplit[user]!.first)
           user.email: {
-            'amount' : double.tryParse(_transactionSplit[user]!.second) ??
-              (amount / _numberOfPeopleChecked),
-            'username' : user.username,
-            'imageUrl' : user.imageUrl,
-          } 
+            'amount': int.tryParse(_transactionSplit[user]!.second) ??
+                  (amount / _numberOfPeopleChecked).round(),
+                
+            'username': user.username,
+            'imageUrl': user.imageUrl,
+          }
     };
     // persist data to firestore;
     try {
-      await FirebaseFirestore.instance.collection('transactions').add({
-      'amount': amount,
-      'description': _descriptionController.text,
-      'addedByEmail': FirebaseAuth.instance.currentUser!.email,
-      'addedByUsername' : FirebaseAuth.instance.currentUser!.displayName,
-      'addedByImageUrl' : FirebaseAuth.instance.currentUser!.photoURL,
-      'paidByEmail': _userWhoPaid.email,
-      'paidByUsername': _userWhoPaid.username,
-      'paidByImageUrl': _userWhoPaid.imageUrl,
-      'splitEqually': _splitEqually,
-      'split': splitDetails,
-      'timestamp': Timestamp.now(),
-    });
-    } catch(e) {
+      await addTransactionAndUpdateGraph({
+        'amount': amount,
+        'description': _descriptionController.text,
+        'addedByEmail': FirebaseAuth.instance.currentUser!.email,
+        'addedByUsername': FirebaseAuth.instance.currentUser!.displayName,
+        'addedByImageUrl': FirebaseAuth.instance.currentUser!.photoURL,
+        'paidByEmail': _userWhoPaid.email,
+        'paidByUsername': _userWhoPaid.username,
+        'paidByImageUrl': _userWhoPaid.imageUrl,
+        'splitEqually': _splitEqually,
+        'split': splitDetails,
+        'timestamp': Timestamp.now(),
+        'status': TransactionStatus.pending.name,
+        'type': TransactionType.expense.name,
+      });
+    } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,9 +167,10 @@ class _BuildTransactionState extends State<BuildTransaction> {
   @override
   void initState() {
     super.initState();
-    _userWhoPaid = widget.users.firstWhere(
+    verifiedUsers = widget.users.where((user) => user.isVerified).toList();
+    _userWhoPaid = verifiedUsers.firstWhere(
         (user) => user.email == FirebaseAuth.instance.currentUser!.email);
-    for (UserFromFireStore user in widget.users) {
+    for (UserFromFireStore user in verifiedUsers) {
       _transactionSplit[user] = Pair(false, '');
     }
   }
@@ -200,31 +208,33 @@ class _BuildTransactionState extends State<BuildTransaction> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: DropdownButtonFormField<UserFromFireStore>(
-                    items: widget.users
-                        .map((user) => DropdownMenuItem(
-                              value: user,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  UserAvatar(
-                                    imageURL: user.imageUrl,
-                                    radius: 12,
+                    items: verifiedUsers
+                        .map(
+                          (user) => DropdownMenuItem(
+                            value: user,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                UserAvatar(
+                                  imageURL: user.imageUrl,
+                                  radius: 12,
+                                ),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: kIsWeb ? 80 : 110,
+                                  child: Text(
+                                    user.username,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
                                   ),
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                    width: kIsWeb ? 80 : 110,
-                                    child: Text(
-                                      user.username,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -278,7 +288,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
             ),
             const SizedBox(height: 10),
             TransactionSplit(
-              users: widget.users,
+              users: verifiedUsers,
               updateSplit: _updateSplit,
               isEnabled: !_splitEqually,
               wasChecked: _recordCheck,
@@ -286,25 +296,29 @@ class _BuildTransactionState extends State<BuildTransaction> {
             ),
             const SizedBox(height: 20),
             Text(
-              '${_userWhoPaid.username} paid ₹ ${double.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || double.tryParse(_amount) == null ? 0 : (num.tryParse(_amount)! / _numberOfPeopleChecked).toStringAsFixed(1)} each' : 'to be split unequally'}',
+              '${_userWhoPaid.username} paid ₹ ${int.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || int.tryParse(_amount) == null ? 0 : (int.tryParse(_amount)! ~/ _numberOfPeopleChecked)} each' : 'to be split unequally'}',
               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: _isLoading ? const Center(child: CircularProgressIndicator()) :  ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    )),
-                onPressed: _recordTransaction,
-                child: const Text(
-                  'Record transaction',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          )),
+                      onPressed: _recordTransaction,
+                      child: const Text(
+                        'Record transaction',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
             ),
           ],
         ),

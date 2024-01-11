@@ -12,7 +12,8 @@ class SummaryCard extends StatefulWidget {
 
 class _SummaryCardState extends State<SummaryCard> {
   Widget getFormattedDebt(num debt) {
-    String debtString = debt.toStringAsFixed(1);
+    final debtInt = debt.toInt();
+    String debtString = debtInt.toString();
     if (debtString.startsWith('-')) {
       debtString = debtString.substring(1);
       return Text(
@@ -78,6 +79,9 @@ class _SummaryCardState extends State<SummaryCard> {
           if (debtGraph?.containsKey('totalMoneyPaid') ?? false) {
             totalMoneyPaid = debtGraph!['totalMoneyPaid'];
             debtGraph.remove('totalMoneyPaid');
+          }
+          if (debtGraph?.containsKey('totalShare') ?? false) {
+            debtGraph!.remove('totalShare');
           }
           if (debtGraph == null || debtGraph.isEmpty) {
             return Text(

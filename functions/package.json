@@ -13,11 +13,13 @@
   },
   "main": "index.js",
   "dependencies": {
+    "firebase": "^10.7.1",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^4.6.0",
     "nodemailer": "^6.9.8"
   },
   "devDependencies": {
+    "@babel/helper-compilation-targets": "^7.23.6",
     "firebase-functions-test": "^3.1.0"
   },
   "private": true

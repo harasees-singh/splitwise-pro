@@ -98,6 +98,7 @@ class _AuthScreenState extends State<AuthScreen> {
           'email': _emailAddress,
           'image_url': imageURl,
           'timestamp': Timestamp.now(),
+          'verified': false,
         });
 
         await widget.releaseLockPostSuccessfulSignUp();
