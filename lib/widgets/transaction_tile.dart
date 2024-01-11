@@ -3,6 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
+import 'package:splitwise_pro/util/enums/transaction_type.dart';
+import 'package:splitwise_pro/util/helper/delete_transaction.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class TransactionTile extends StatefulWidget {
@@ -16,17 +18,19 @@ class TransactionTile extends StatefulWidget {
       required this.paidByImageUrl,
       required this.timestamp,
       required this.id,
-      required this.status});
+      required this.status,
+      required this.type,});
 
   final String paidByEmail;
   final String paidByUsername;
   final String description;
   final String paidByImageUrl;
-  final num amount;
-  final num amountLent;
+  final int amount;
+  final int amountLent;
   final Timestamp timestamp;
   final String id;
   final TransactionStatus status;
+  final TransactionType type;
 
   @override
   State<TransactionTile> createState() => _TransactionTileState();
@@ -40,7 +44,7 @@ class _TransactionTileState extends State<TransactionTile> {
   @override
   Widget build(BuildContext context) {
 
-    Widget leadingWidget = UserAvatar(imageURL: widget.paidByImageUrl,);
+    Widget leadingWidget = widget.type == TransactionType.expense ? UserAvatar(imageURL: widget.paidByImageUrl,) : const SizedBox(width: 40, height: 40, child: Icon(Icons.money, color: Colors.green, size: 40,));
     if (widget.status == TransactionStatus.pending) {
       leadingWidget = const Padding(padding: EdgeInsets.all(2), child: CircularProgressIndicator());
     }
@@ -49,11 +53,27 @@ class _TransactionTileState extends State<TransactionTile> {
     }
 
     return Dismissible(
-      dragStartBehavior: DragStartBehavior.down,
+      dragStartBehavior: DragStartBehavior.start,
       direction: widget.status == TransactionStatus.completed
           ? DismissDirection.horizontal
           : DismissDirection.none,
-      movementDuration: const Duration(milliseconds: 500),
+      movementDuration: const Duration(milliseconds: 300),
+      confirmDismiss: (direction) async {
+        return await showDialog(context: context, builder: (ctx) {
+          return AlertDialog(
+            title: Text('Delete Transaction', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+            content: Text('Are you sure you want to delete this transaction?', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+            actions: [
+              TextButton(onPressed: () {
+                Navigator.of(ctx).pop(true);
+              }, child: const Text('Delete')),
+              TextButton(onPressed: () {
+                Navigator.of(ctx).pop(false);
+              }, child: const Text('Cancel')),
+            ],
+          );
+        });
+      },
       background: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         color: Theme.of(context).colorScheme.errorContainer,
@@ -99,10 +119,20 @@ class _TransactionTileState extends State<TransactionTile> {
         });
       },
       onDismissed: (dismissDirection) async {
-        await FirebaseFirestore.instance
-            .collection('transactions')
-            .doc(widget.id)
-            .delete();
+        try {
+          await deleteTransactionAndUpdateGraph(widget.id);
+        }
+        catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString()),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        }
       },
       key: ValueKey(widget.id),
       child: ListTile(
@@ -134,25 +164,29 @@ class _TransactionTileState extends State<TransactionTile> {
         trailing: SizedBox(
           height: double.infinity,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: widget.type == TransactionType.expense ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
+              widget.type == TransactionType.expense ? Text(
                 widget.amountLent.toString()[0] == '-'
-                    ? '₹${widget.amountLent.toStringAsFixed(1).toString().substring(1)}'
-                    : '₹${widget.amountLent.toStringAsFixed(1)}',
+                    ? '₹${widget.amountLent.toString().substring(1)}'
+                    : '₹${widget.amountLent.toString()}',
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: widget.amountLent > 0
                         ? const Color.fromARGB(255, 143, 211, 145)
                         : (widget.amountLent.toDouble() == 0
                             ? Theme.of(context).colorScheme.secondary
                             : const Color.fromARGB(255, 219, 121, 114))),
-              ),
+              ) : const SizedBox.shrink(),
               Text(
-                '₹${widget.amount.toDouble()}',
-                style: Theme.of(context)
+                '₹${widget.amount}',
+                style: widget.type == TransactionType.expense ? Theme.of(context)
                     .textTheme
                     .titleSmall!
+                    .copyWith(color: Theme.of(context).colorScheme.secondary) :
+                    Theme.of(context)
+                    .textTheme
+                    .titleLarge!
                     .copyWith(color: Theme.of(context).colorScheme.secondary),
               ),
             ],

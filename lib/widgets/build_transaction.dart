@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:splitwise_pro/models/pair.dart';
 import 'package:splitwise_pro/models/user_from_firestore.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
+import 'package:splitwise_pro/util/enums/transaction_type.dart';
+import 'package:splitwise_pro/util/helper/add_transaction.dart';
 import 'package:splitwise_pro/widgets/transaction_split.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -45,12 +47,12 @@ class _BuildTransactionState extends State<BuildTransaction> {
   }
 
   void _recordTransaction() async {
-    double? amount = double.tryParse(_amount);
+    int? amount = int.tryParse(_amount);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter a valid amount > 0'),
+          content: const Text('Please enter a valid integer amount > 0'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -77,18 +79,18 @@ class _BuildTransactionState extends State<BuildTransaction> {
       return;
     }
     if (!_splitEqually) {
-      double total = 0;
+      int total = 0;
       for (UserFromFireStore user in verifiedUsers) {
         if (_transactionSplit[user]!.first == false) {
           continue;
         }
-        double? amount = double.tryParse(_transactionSplit[user]!.second);
+        int? amount = int.tryParse(_transactionSplit[user]!.second);
         if (amount == null || amount <= 0) {
           ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
-                  'Please enter a valid amount for all selected users'),
+                  'Please enter a valid integer amount for all selected users'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -117,17 +119,17 @@ class _BuildTransactionState extends State<BuildTransaction> {
       for (UserFromFireStore user in verifiedUsers)
         if (_transactionSplit[user]!.first)
           user.email: {
-            'amount': double.tryParse(_transactionSplit[user]!.second) ??
-                double.parse(
-                    (amount / _numberOfPeopleChecked).toStringAsFixed(1)),
+            'amount': int.tryParse(_transactionSplit[user]!.second) ??
+                  (amount / _numberOfPeopleChecked).round(),
+                
             'username': user.username,
             'imageUrl': user.imageUrl,
           }
     };
     // persist data to firestore;
     try {
-      await FirebaseFirestore.instance.collection('transactions').add({
-        'amount': double.parse(amount.toStringAsFixed(1)),
+      await addTransactionAndUpdateGraph({
+        'amount': amount,
         'description': _descriptionController.text,
         'addedByEmail': FirebaseAuth.instance.currentUser!.email,
         'addedByUsername': FirebaseAuth.instance.currentUser!.displayName,
@@ -139,6 +141,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
         'split': splitDetails,
         'timestamp': Timestamp.now(),
         'status': TransactionStatus.pending.name,
+        'type': TransactionType.expense.name,
       });
     } catch (e) {
       if (context.mounted) {
@@ -293,7 +296,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
             ),
             const SizedBox(height: 20),
             Text(
-              '${_userWhoPaid.username} paid ₹ ${double.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || double.tryParse(_amount) == null ? 0 : (num.tryParse(_amount)! / _numberOfPeopleChecked).toStringAsFixed(1)} each' : 'to be split unequally'}',
+              '${_userWhoPaid.username} paid ₹ ${int.tryParse(_amount) == null ? 0 : _amount} for $_numberOfPeopleChecked people, ${_splitEqually ? 'split will be ₹ ${_numberOfPeopleChecked == 0 || int.tryParse(_amount) == null ? 0 : (int.tryParse(_amount)! ~/ _numberOfPeopleChecked)} each' : 'to be split unequally'}',
               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             ),
             const SizedBox(height: 20),
