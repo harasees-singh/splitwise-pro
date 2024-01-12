@@ -136,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           amountLent: amountLent.toInt(),
                           timestamp: timestamp,
                           splitMap: splitMap,
+                          dismissible: true,
                         );
                       },
                     ),

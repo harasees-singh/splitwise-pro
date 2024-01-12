@@ -21,7 +21,8 @@ class TransactionTile extends StatefulWidget {
       required this.id,
       required this.status,
       required this.type,
-      required this.splitMap});
+      required this.splitMap,
+      required this.dismissible});
 
   final String paidByEmail;
   final String paidByUsername;
@@ -34,6 +35,7 @@ class TransactionTile extends StatefulWidget {
   final TransactionStatus status;
   final TransactionType type;
   final Map<String, dynamic> splitMap;
+  final bool dismissible;
 
   @override
   State<TransactionTile> createState() => _TransactionTileState();
@@ -90,7 +92,7 @@ class _TransactionTileState extends State<TransactionTile> {
       },
       child: Dismissible(
         dragStartBehavior: DragStartBehavior.start,
-        direction: widget.status == TransactionStatus.completed
+        direction: widget.status == TransactionStatus.completed && widget.dismissible
             ? DismissDirection.horizontal
             : DismissDirection.none,
         movementDuration: const Duration(milliseconds: 300),

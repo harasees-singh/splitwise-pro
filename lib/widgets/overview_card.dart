@@ -18,7 +18,7 @@ class OverviewCard extends StatelessWidget {
                   .textTheme
                   .titleMedium!
                   .copyWith(color: Theme.of(context).colorScheme.secondary)),
-          Text(value,
+          Text('₹$value',
               style: Theme.of(context)
                   .textTheme
                   .titleLarge!

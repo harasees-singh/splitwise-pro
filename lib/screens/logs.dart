@@ -110,6 +110,7 @@ class LogsScreen extends StatelessWidget {
                   amountLent: amountLent.toInt(),
                   timestamp: timestamp,
                   splitMap: splitMap,
+                  dismissible: false,
                 ),
               ]);
             },
