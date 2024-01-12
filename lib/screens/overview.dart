@@ -74,8 +74,7 @@ class OverviewScreen extends StatelessWidget {
               yourGraph.remove('totalShare');
             }
           }
-
-          // return Text('ok');
+          
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 15, 10, 10),
             decoration: BoxDecoration(

@@ -20,10 +20,8 @@ class LogsScreen extends StatelessWidget {
             .snapshots(),
         builder: (ctx, snapshots) {
           if (snapshots.connectionState == ConnectionState.waiting) {
-            return const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           }
 
@@ -72,8 +70,6 @@ class LogsScreen extends StatelessWidget {
                 amountLent = totalAmount + amountLent;
               }
 
-              Widget actionIcon = action == TransactionAction.add ? const Icon(Icons.add, color: Colors.green) : const Icon(Icons.delete, color: Colors.red);
-                  
               return Column(children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
