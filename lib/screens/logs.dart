@@ -12,7 +12,7 @@ class LogsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Logs')),
+      appBar: AppBar(title: const Text('Logs'), centerTitle: false,),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('logs')

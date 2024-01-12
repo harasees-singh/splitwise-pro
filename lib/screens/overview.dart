@@ -10,6 +10,7 @@ class OverviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Overview'),
+        centerTitle: false,
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('graph').snapshots(),
@@ -74,7 +75,7 @@ class OverviewScreen extends StatelessWidget {
               yourGraph.remove('totalShare');
             }
           }
-          
+
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 15, 10, 10),
             decoration: BoxDecoration(
