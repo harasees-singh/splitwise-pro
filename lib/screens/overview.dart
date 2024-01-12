@@ -50,14 +50,32 @@ class OverviewScreen extends StatelessWidget {
               globalSpending += (graph['totalMoneyPaid'] as num).toInt();
             }
           }
-          final yourGraph = data.docs
-              .firstWhere(
-                  (doc) => doc.id == FirebaseAuth.instance.currentUser!.email)
-              .data();
-          totalYouPaidFor = ((yourGraph['totalMoneyPaid'] ?? 0) as num).toInt();
-          yourShare = yourGraph['totalShare'] ?? 0;
-          yourGraph.remove('totalMoneyPaid');
-          yourGraph.remove('totalShare');
+          Map<String, dynamic>? yourGraph;
+          if (data.docs.indexWhere((doc) =>
+                  doc.id == FirebaseAuth.instance.currentUser!.email) !=
+              -1) {
+            yourGraph = data.docs
+                .firstWhere(
+                    (doc) => doc.id == FirebaseAuth.instance.currentUser!.email)
+                .data();
+
+            totalYouPaidFor = ((yourGraph.containsKey('totalMoneyPaid')
+                    ? yourGraph['totalMoneyPaid']
+                    : 0) as num)
+                .toInt();
+            yourShare = ((yourGraph.containsKey('totalShare')
+                    ? yourGraph['totalShare']
+                    : 0) as num)
+                .toInt();
+            if (yourGraph.containsKey('totalMoneyPaid')) {
+              yourGraph.remove('totalMoneyPaid');
+            }
+            if (yourGraph.containsKey('totalShare')) {
+              yourGraph.remove('totalShare');
+            }
+          }
+
+          // return Text('ok');
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 15, 10, 10),
             decoration: BoxDecoration(
