@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Timestamp timestamp =
                             snapshots.data!.docs[index]['timestamp'];
                         num totalAmount = snapshots.data!.docs[index]['amount'];
-                        dynamic splitMap = snapshots.data!.docs[index]['split'];
+                        Map<String, dynamic> splitMap = snapshots.data!.docs[index]['split'];
                         num amountLent = ((splitMap.containsKey(
                                     FirebaseAuth.instance.currentUser!.email)
                                 ? splitMap[
@@ -135,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           amount: totalAmount.toInt(),
                           amountLent: amountLent.toInt(),
                           timestamp: timestamp,
+                          splitMap: splitMap,
                         );
                       },
                     ),

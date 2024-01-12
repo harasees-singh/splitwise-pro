@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 
@@ -11,6 +12,7 @@ Future addTransactionAndUpdateGraph(
   final batch = FirebaseFirestore.instance.batch();
   final transactionsRef = FirebaseFirestore.instance.collection('transactions');
   final graphRef = FirebaseFirestore.instance.collection('graph');
+  final logsRef = FirebaseFirestore.instance.collection('logs');
   
   // cash payment or expense
   final type = TransactionType.values.byName(transactionDetails['type']);
@@ -32,6 +34,7 @@ Future addTransactionAndUpdateGraph(
 
     for (final email in listOfDebtorEmails) {
       splitMap[email]['oldDebt'] = 0;
+      splitMap[email]['totalShare'] = 0;
     }
 
     final querySnapshotGraph = await graphRef
@@ -50,6 +53,9 @@ Future addTransactionAndUpdateGraph(
       }
       if (data.containsKey(paidByEmailKey)) {
         splitMap[doc.id]['oldDebt'] = data[paidByEmailKey]['debt'] * -1;
+      }
+      if (data.containsKey('totalShare')) {
+        splitMap[doc.id]['totalShare'] = data['totalShare'];
       }
     }
 
@@ -84,7 +90,8 @@ Future addTransactionAndUpdateGraph(
             'debt': -oldDebt - debt,
             'username': paidByUsername,
             'imageUrl': paidByImageUrl,
-          }
+          },
+          'totalShare': splitMap[debtorEmail]['totalShare'] + debt,
         },
         SetOptions(merge: true),
       );
@@ -92,6 +99,11 @@ Future addTransactionAndUpdateGraph(
     await batch.commit();
     await transactionsRef.doc(transaction.id).set(
         {'status': TransactionStatus.completed.name}, SetOptions(merge: true));
+    await logsRef.add({
+      ...transactionDetails,
+      'action': TransactionAction.add.name,
+      'logTimestamp': Timestamp.now(),
+    });
   } catch (e) {
     await transactionsRef
         .doc(transaction.id)

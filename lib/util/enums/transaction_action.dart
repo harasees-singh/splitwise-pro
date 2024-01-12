@@ -1,0 +1,1 @@
+enum TransactionAction {add, delete, update}

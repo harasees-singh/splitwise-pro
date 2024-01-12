@@ -58,12 +58,16 @@ class _SummaryCardState extends State<SummaryCard> {
           }
 
           if (!snapshots.hasData) {
-            return Text(
-              'You are all settled up!',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium!
-                  .copyWith(color: Theme.of(context).colorScheme.secondary),
+            return Container(
+              alignment: Alignment.center,
+              width: double.infinity,
+              child: Text(
+                'You are all settled up!',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium!
+                    .copyWith(color: Theme.of(context).colorScheme.secondary),
+              ),
             );
           }
 
@@ -74,22 +78,24 @@ class _SummaryCardState extends State<SummaryCard> {
             );
           }
           final data = snapshots.data as DocumentSnapshot<Map<String, dynamic>>;
-          num totalMoneyPaid = 0;
           Map<String, dynamic>? debtGraph = data.data();
           if (debtGraph?.containsKey('totalMoneyPaid') ?? false) {
-            totalMoneyPaid = debtGraph!['totalMoneyPaid'];
-            debtGraph.remove('totalMoneyPaid');
+            debtGraph!.remove('totalMoneyPaid');
           }
           if (debtGraph?.containsKey('totalShare') ?? false) {
             debtGraph!.remove('totalShare');
           }
           if (debtGraph == null || debtGraph.isEmpty) {
-            return Text(
-              'You are all settled up!',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium!
-                  .copyWith(color: Theme.of(context).colorScheme.secondary),
+            return Container(
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: Text(
+                'You are all settled up!',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium!
+                    .copyWith(color: Theme.of(context).colorScheme.secondary),
+              ),
             );
           }
 

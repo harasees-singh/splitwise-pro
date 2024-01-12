@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 
 String removePeriodsFromEmail(String email) {
@@ -10,6 +11,7 @@ Future deleteTransactionAndUpdateGraph(
   final batch = FirebaseFirestore.instance.batch();
   final transactionsRef = FirebaseFirestore.instance.collection('transactions');
   final graphRef = FirebaseFirestore.instance.collection('graph');
+  final logsRef = FirebaseFirestore.instance.collection('logs');
   final Map<String, dynamic> transactionDetails = (await transactionsRef.doc(transactionId).get()).data()!;
 
   // rm transac from transactions collection
@@ -32,6 +34,7 @@ Future deleteTransactionAndUpdateGraph(
 
     for (final email in listOfDebtorEmails) {
       splitMap[email]['oldDebt'] = 0;
+      splitMap[email]['totalShare'] = 0;
     }
 
     final querySnapshotGraph = await graphRef
@@ -50,6 +53,9 @@ Future deleteTransactionAndUpdateGraph(
       }
       if (data.containsKey(paidByEmailKey)) {
         splitMap[doc.id]['oldDebt'] = data[paidByEmailKey]['debt'] * -1;
+      }
+      if (data.containsKey('totalShare')) {
+        splitMap[doc.id]['totalShare'] = data['totalShare'];
       }
     }
 
@@ -84,12 +90,18 @@ Future deleteTransactionAndUpdateGraph(
             'debt': -oldDebt - debt,
             'username': paidByUsername,
             'imageUrl': paidByImageUrl,
-          }
+          },
+          'totalShare': splitMap[debtorEmail]['totalShare'] + debt,
         },
         SetOptions(merge: true),
       );
     }
     await batch.commit();
+    await logsRef.add({
+      ...transactionDetails,
+      'action': TransactionAction.delete.name,
+      'logTimestamp': Timestamp.now(),
+    });
   } catch (e) {
     // in case of error add the transaction back to transactions collection
     await transactionsRef
