@@ -15,6 +15,10 @@ void main() async {
     final auth = FirebaseAuth.instanceFor(app: Firebase.app());
     auth.setPersistence(Persistence.LOCAL);
   }
+  if (kIsWeb){
+    final auth = FirebaseAuth.instanceFor(app: Firebase.app());
+    auth.setPersistence(Persistence.LOCAL);
+  }
   runApp(const MyApp());
 }
 
@@ -24,6 +28,7 @@ var kColorScheme =
 var kDarkColorScheme = ColorScheme.fromSeed(
     seedColor: const Color.fromARGB(255, 0, 46, 67),
     brightness: Brightness.dark
+  
   );
 
 class MyApp extends StatelessWidget {

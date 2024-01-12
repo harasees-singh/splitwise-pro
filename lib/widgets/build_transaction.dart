@@ -153,7 +153,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
           ),
         );
       }
-      return;
+      await Future.delayed(const Duration(seconds: 2));
     }
     setState(() {
       _isLoading = false;

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 
@@ -11,7 +12,8 @@ Future addTransactionAndUpdateGraph(
   final batch = FirebaseFirestore.instance.batch();
   final transactionsRef = FirebaseFirestore.instance.collection('transactions');
   final graphRef = FirebaseFirestore.instance.collection('graph');
-  
+  final logsRef = FirebaseFirestore.instance.collection('logs');
+
   // cash payment or expense
   final type = TransactionType.values.byName(transactionDetails['type']);
 
@@ -28,15 +30,16 @@ Future addTransactionAndUpdateGraph(
     final List<String> listOfDebtorEmails = splitMap.keys.toList();
     num totalMoneyPaid = 0;
     num totalShare = 0;
-    num share = splitMap[paidByEmail] == null ? 0 : splitMap[paidByEmail]['amount'];
+    num share =
+        splitMap[paidByEmail] == null ? 0 : splitMap[paidByEmail]['amount'];
 
     for (final email in listOfDebtorEmails) {
       splitMap[email]['oldDebt'] = 0;
+      splitMap[email]['totalShare'] = 0;
     }
 
-    final querySnapshotGraph = await graphRef
-        .where(FieldPath.documentId, whereIn: [...listOfDebtorEmails, paidByEmail])
-        .get();
+    final querySnapshotGraph = await graphRef.where(FieldPath.documentId,
+        whereIn: [...listOfDebtorEmails, paidByEmail]).get();
 
     for (final doc in querySnapshotGraph.docs) {
       final data = doc.data();
@@ -47,17 +50,26 @@ Future addTransactionAndUpdateGraph(
         if (data.containsKey('totalShare')) {
           totalShare = data['totalShare'];
         }
-      }
-      if (data.containsKey(paidByEmailKey)) {
-        splitMap[doc.id]['oldDebt'] = data[paidByEmailKey]['debt'] * -1;
+      } else {
+        if (data.containsKey(paidByEmailKey)) {
+          splitMap[doc.id]['oldDebt'] = data[paidByEmailKey]['debt'] * -1;
+        }
+        if (data.containsKey('totalShare')) {
+          splitMap[doc.id]['totalShare'] = data['totalShare'];
+        }
       }
     }
 
     if (type == TransactionType.expense) {
-      batch.set(graphRef.doc(paidByEmail),
-        {'totalMoneyPaid': totalMoneyPaid + amount, 'totalShare': totalShare + share}, SetOptions(merge: true));
+      batch.set(
+          graphRef.doc(paidByEmail),
+          {
+            'totalMoneyPaid': totalMoneyPaid + amount,
+            'totalShare': totalShare + share
+          },
+          SetOptions(merge: true));
     }
-  
+
     for (final debtorEmail in listOfDebtorEmails) {
       if (debtorEmail == paidByEmail) {
         continue;
@@ -84,7 +96,8 @@ Future addTransactionAndUpdateGraph(
             'debt': -oldDebt - debt,
             'username': paidByUsername,
             'imageUrl': paidByImageUrl,
-          }
+          },
+          'totalShare': splitMap[debtorEmail]['totalShare'] + debt,
         },
         SetOptions(merge: true),
       );
@@ -92,6 +105,11 @@ Future addTransactionAndUpdateGraph(
     await batch.commit();
     await transactionsRef.doc(transaction.id).set(
         {'status': TransactionStatus.completed.name}, SetOptions(merge: true));
+    await logsRef.add({
+      ...transactionDetails,
+      'action': TransactionAction.add.name,
+      'logTimestamp': Timestamp.now(),
+    });
   } catch (e) {
     await transactionsRef
         .doc(transaction.id)
