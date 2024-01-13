@@ -90,7 +90,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
-                  'Please enter a valid integer amount for all selected users'),
+                  'Please enter a valid integer > 0 amount for all selected users'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -115,13 +115,20 @@ class _BuildTransactionState extends State<BuildTransaction> {
       _isLoading = true;
     });
 
+    int leftAmount = amount % _numberOfPeopleChecked;
+
+    int getLeftAmount() {
+      if (leftAmount == 0) {return 0;}
+      leftAmount--;
+      return 1;
+    }
+
     Map<String, Map<String, dynamic>> splitDetails = {
       for (UserFromFireStore user in verifiedUsers)
         if (_transactionSplit[user]!.first)
           user.email: {
             'amount': int.tryParse(_transactionSplit[user]!.second) ??
-                  (amount / _numberOfPeopleChecked).round(),
-                
+                  (amount ~/ _numberOfPeopleChecked) + getLeftAmount(),
             'username': user.username,
             'imageUrl': user.imageUrl,
           }

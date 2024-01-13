@@ -5,9 +5,9 @@ import 'package:splitwise_pro/screens/overview.dart';
 import 'package:splitwise_pro/screens/settle_up.dart';
 
 class TabsScreen extends StatefulWidget {
-  TabsScreen({Key? key, this.index}) :super(key: key);
+  const TabsScreen({Key? key, this.index}) :super(key: key);
 
-  int? index;
+  final int? index;
   @override
   State<TabsScreen> createState() => _TabsScreenState();
 }

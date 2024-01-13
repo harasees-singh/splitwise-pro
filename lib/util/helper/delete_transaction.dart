@@ -98,7 +98,7 @@ Future deleteTransactionAndUpdateGraph(String transactionId) async {
             'username': paidByUsername,
             'imageUrl': paidByImageUrl,
           },
-          'totalShare': splitMap[debtorEmail]['totalShare'] + debt,
+          'totalShare': splitMap[debtorEmail]['totalShare'] + (type == TransactionType.expense ? debt : 0),
         },
         SetOptions(merge: true),
       );
