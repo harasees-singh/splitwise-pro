@@ -33,6 +33,17 @@ class _BuildTransactionState extends State<BuildTransaction> {
     _transactionSplit[user]!.second = amount;
   }
 
+  void _updateSplitEqually(bool value) {
+    setState(() {
+      _splitEqually = value;
+    });
+    if (_splitEqually == false) {
+      for (UserFromFireStore user in verifiedUsers) {
+        _transactionSplit[user]!.second = '';
+      }
+    }
+  }
+
   void _recordCheck(UserFromFireStore user, bool wasChecked) {
     _transactionSplit[user]!.first = wasChecked;
     if (wasChecked) {
@@ -280,9 +291,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
                         value: _splitEqually,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
-                          setState(() {
-                            _splitEqually = value!;
-                          });
+                          _updateSplitEqually(value!);
                         },
                         activeColor: Theme.of(context).colorScheme.primary,
                         checkColor: Theme.of(context).colorScheme.onPrimary,
