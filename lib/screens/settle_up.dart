@@ -97,7 +97,7 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
 
     if (context.mounted) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) {
-        return TabsScreen(index: 0);
+        return const TabsScreen(index: 0);
       }));
     }
   }

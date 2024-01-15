@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
@@ -35,6 +36,7 @@ class _SummaryCardState extends State<SummaryCard> {
 
   @override
   Widget build(BuildContext context) {
+    String envSuffix = kReleaseMode ? '-prod' : '-dev';
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 15, 10, 10),
       decoration: BoxDecoration(
@@ -47,7 +49,7 @@ class _SummaryCardState extends State<SummaryCard> {
       padding: const EdgeInsets.all(10),
       child: StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('graph')
+            .collection('graph$envSuffix')
             .doc(FirebaseAuth.instance.currentUser!.email)
             .snapshots(),
         builder: (context, snapshots) {

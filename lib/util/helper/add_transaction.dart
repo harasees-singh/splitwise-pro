@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
+import 'package:flutter/foundation.dart';
 
 String removePeriodsFromEmail(String email) {
   return email.replaceAll('.', '');
@@ -10,9 +11,11 @@ String removePeriodsFromEmail(String email) {
 Future addTransactionAndUpdateGraph(
     Map<String, dynamic> transactionDetails) async {
   final batch = FirebaseFirestore.instance.batch();
-  final transactionsRef = FirebaseFirestore.instance.collection('transactions');
-  final graphRef = FirebaseFirestore.instance.collection('graph');
-  final logsRef = FirebaseFirestore.instance.collection('logs');
+  
+  String envSuffix = kReleaseMode ? '-prod' : '-dev';
+  final transactionsRef = FirebaseFirestore.instance.collection('transactions$envSuffix');
+  final graphRef = FirebaseFirestore.instance.collection('graph$envSuffix');
+  final logsRef = FirebaseFirestore.instance.collection('logs$envSuffix');
 
   // cash payment or expense
   final type = TransactionType.values.byName(transactionDetails['type']);

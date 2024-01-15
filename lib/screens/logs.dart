@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
@@ -9,13 +10,16 @@ import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class LogsScreen extends StatelessWidget {
   const LogsScreen({Key? key}) : super(key: key);
+
+  final String envSuffix = kReleaseMode ? '-prod' : '-dev';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Logs'), centerTitle: false,),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('logs')
+            .collection('logs$envSuffix')
             .orderBy('logTimestamp', descending: true)
             .snapshots(),
         builder: (ctx, snapshots) {
