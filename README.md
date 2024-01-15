@@ -1,16 +1,16 @@
-# splitwise_pro
+# splitwise pro
 
-A new Flutter project.
+manage group expenses with ease on android or web
 
-## Getting Started
+# Tech stack
 
-This project is a starting point for a Flutter application.
+* Firebase
+* Flutter (dart)
+* Google cloud functions (node.js)
 
-A few resources to get you started if this is your first Flutter project:
+## Upcoming features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* notifications for android
+* emails for all platforms
+* edit expense
+* undo delete
