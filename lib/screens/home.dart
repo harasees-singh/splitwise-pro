@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/screens/add_transaction.dart';
@@ -8,6 +12,8 @@ import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/widgets/summary_card.dart';
 import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,6 +23,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  final String envSuffix = kReleaseMode ? '-prod' : '-dev';
 
   void logout () {
     showDialog(context: context, builder: (ctx) {
@@ -34,6 +42,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     }); 
+  }
+
+  void _setupPushNotifications() async {
+    final fcm = FirebaseMessaging.instance;
+    
+    await fcm.requestPermission();
+    await fcm.subscribeToTopic(FirebaseAuth.instance.currentUser!.email!);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb && Platform.isAndroid) {
+      _setupPushNotifications();
+    }
   }
 
   @override
@@ -63,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SummaryCard(),
               StreamBuilder(
                 stream: FirebaseFirestore.instance
-                    .collection('transactions')
+                    .collection('transactions$envSuffix')
                     .orderBy('timestamp', descending: true)
                     .snapshots(),
                 builder: (ctx, snapshots) {

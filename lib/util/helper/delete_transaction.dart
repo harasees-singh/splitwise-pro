@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:splitwise_pro/util/enums/transaction_action.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 
@@ -8,9 +9,11 @@ String removePeriodsFromEmail(String email) {
 
 Future deleteTransactionAndUpdateGraph(String transactionId) async {
   final batch = FirebaseFirestore.instance.batch();
-  final transactionsRef = FirebaseFirestore.instance.collection('transactions');
-  final graphRef = FirebaseFirestore.instance.collection('graph');
-  final logsRef = FirebaseFirestore.instance.collection('logs');
+  
+  String envSuffix = kReleaseMode ? '-prod' : '-dev';
+  final transactionsRef = FirebaseFirestore.instance.collection('transactions$envSuffix');
+  final graphRef = FirebaseFirestore.instance.collection('graph$envSuffix');
+  final logsRef = FirebaseFirestore.instance.collection('logs$envSuffix');
   final Map<String, dynamic> transactionDetails =
       (await transactionsRef.doc(transactionId).get()).data()!;
 

@@ -14,3 +14,6 @@ manage group expenses with ease on android or web
 * emails for all platforms
 * edit expense
 * undo delete
+* udpate user profile
+
+### Thankyou for all the support!

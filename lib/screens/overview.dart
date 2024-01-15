@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/widgets/overview_card.dart';
 
@@ -7,13 +8,14 @@ class OverviewScreen extends StatelessWidget {
   const OverviewScreen({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    String envSuffix = kReleaseMode ? '-prod' : '-dev';
     return Scaffold(
       appBar: AppBar(
         title: const Text('Overview'),
         centerTitle: false,
       ),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('graph').snapshots(),
+        stream: FirebaseFirestore.instance.collection('graph$envSuffix').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
