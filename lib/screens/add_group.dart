@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/models/user_from_firestore.dart';
 import 'package:splitwise_pro/screens/search_users.dart';
-import 'package:splitwise_pro/screens/tabs.dart';
 import 'package:splitwise_pro/screens/verify_email.dart';
 import 'package:splitwise_pro/widgets/button.dart';
 import 'package:splitwise_pro/widgets/user_tile.dart';
@@ -40,9 +39,9 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: const Text('group name cannot be empty'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          content: const Text('group name cannot be empty'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
@@ -51,20 +50,24 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: const Text('please select atleast one user'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          content: const Text('please select atleast one user'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
 
-    if (addedUsers.where((element) => element.email == FirebaseAuth.instance.currentUser!.email).isEmpty) {
+    if (addedUsers
+        .where((element) =>
+            element.email == FirebaseAuth.instance.currentUser!.email)
+        .isEmpty) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: const Text('you cannot create a group without adding yourself in it'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          content: const Text(
+              'you cannot create a group without adding yourself in it'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
@@ -73,12 +76,20 @@ class _AddGroupScreenState extends State<AddGroupScreen> {
       _isLoading = true;
     });
 
-    final docRef = await FirebaseFirestore.instance.collection('groups').add(
-      {
+    try {
+      await FirebaseFirestore.instance.collection('groups').add({
         'name': groupName,
         'users': addedUsers.map((user) => user.email).toList()
-      }
-    );
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
 
     setState(() {
       _isLoading = false;

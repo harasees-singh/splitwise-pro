@@ -10,9 +10,9 @@ class UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: UserAvatar(imageURL: user.imageUrl),
-      title: Text(user.username, style: Theme.of(context).textTheme.bodyLarge),
+      title: Text(user.username, style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: Theme.of(context).colorScheme.secondary)),
       trailing: IconButton(
-        icon: Icon(Icons.delete),
+        icon: const Icon(Icons.delete),
         onPressed: () {
           onDelete(user);
         },
