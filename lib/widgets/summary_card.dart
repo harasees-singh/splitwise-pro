@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class SummaryCard extends StatefulWidget {
-  const SummaryCard({super.key});
+  const SummaryCard({super.key, required this.groupId});
+
+  final String groupId;
 
   @override
   State<SummaryCard> createState() => _SummaryCardState();
@@ -50,6 +52,8 @@ class _SummaryCardState extends State<SummaryCard> {
       child: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('graph$envSuffix')
+            .doc(widget.groupId)
+            .collection('decoy')
             .doc(FirebaseAuth.instance.currentUser!.email)
             .snapshots(),
         builder: (context, snapshots) {

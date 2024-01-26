@@ -4,7 +4,8 @@ import 'package:splitwise_pro/models/user_from_firestore.dart';
 import 'package:splitwise_pro/widgets/build_transaction.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({Key? key}) : super(key: key);
+  const AddTransactionScreen({Key? key, required this.groupId}) : super(key: key);
+  final String groupId;
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -14,7 +15,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   List<UserFromFireStore>? _users;
   Future<QuerySnapshot<Map<String, dynamic>>>? _fetchedUsers;
   Future<QuerySnapshot<Map<String, dynamic>>> _fetchUsers() async {
-    return await FirebaseFirestore.instance.collection('users').get();
+    final group = (await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).get()).data();
+    return await FirebaseFirestore.instance.collection('users').where('email', whereIn: group!['users']).get();
   }
 
   void _setUsers(
@@ -55,7 +57,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             );
           }
           _setUsers(snapshot.data!.docs);
-          return BuildTransaction(users: _users!);
+          return BuildTransaction(users: _users!, groupId: widget.groupId,);
         },
       ),
     );

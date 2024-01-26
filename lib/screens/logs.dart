@@ -9,9 +9,19 @@ import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class LogsScreen extends StatelessWidget {
-  const LogsScreen({Key? key}) : super(key: key);
+  const LogsScreen({Key? key, required this.groupId}) : super(key: key);
 
+  final String groupId;
   final String envSuffix = kReleaseMode ? '-prod' : '-dev';
+
+  List<QueryDocumentSnapshot<dynamic>> getTimeSortedLogs(List<QueryDocumentSnapshot<dynamic>> transactionsList) {
+    transactionsList.sort((a, b) {
+      Timestamp aTimestamp = a['timestamp'];
+      Timestamp bTimestamp = b['timestamp'];
+      return bTimestamp.compareTo(aTimestamp);
+    });
+    return transactionsList;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +30,7 @@ class LogsScreen extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('logs$envSuffix')
-            .orderBy('logTimestamp', descending: true)
+            .where('groupId', isEqualTo: groupId)
             .snapshots(),
         builder: (ctx, snapshots) {
           if (snapshots.connectionState == ConnectionState.waiting) {
@@ -48,28 +58,29 @@ class LogsScreen extends StatelessWidget {
             );
           }
 
+          List<QueryDocumentSnapshot<dynamic>> logsList = getTimeSortedLogs(snapshots.data!.docs);
 
           return ListView.builder(
             itemCount: snapshots.data!.docs.length,
             itemBuilder: (ctx, index) {
               TransactionAction action = TransactionAction.values
-                  .byName(snapshots.data!.docs[index]['action']);
+                  .byName(logsList[index]['action']);
               TransactionType type = TransactionType.values
-                  .byName(snapshots.data!.docs[index]['type']);
-              String id = snapshots.data!.docs[index].id;
+                  .byName(logsList[index]['type']);
+              String id = logsList[index].id;
               String paidByImageUrl =
-                  snapshots.data!.docs[index]['paidByImageUrl'];
-              Timestamp timestamp = snapshots.data!.docs[index]['timestamp'];
-              num totalAmount = snapshots.data!.docs[index]['amount'];
+                  logsList[index]['paidByImageUrl'];
+              Timestamp timestamp = logsList[index]['timestamp'];
+              num totalAmount = logsList[index]['amount'];
               Map<String, dynamic> splitMap =
-                  snapshots.data!.docs[index]['split'];
+                  logsList[index]['split'];
               num amountLent = ((splitMap
                           .containsKey(FirebaseAuth.instance.currentUser!.email)
                       ? splitMap[FirebaseAuth.instance.currentUser!.email]
                           ['amount']!
                       : 0) as num) *
                   -1;
-              String paidByEmail = snapshots.data!.docs[index]['paidByEmail'];
+              String paidByEmail = logsList[index]['paidByEmail'];
               if (paidByEmail == FirebaseAuth.instance.currentUser!.email) {
                 amountLent = totalAmount + amountLent;
               }
@@ -82,13 +93,13 @@ class LogsScreen extends StatelessWidget {
                       Row(
                         children: [
                           UserAvatar(
-                            imageURL: snapshots.data!.docs[index]
+                            imageURL: logsList[index]
                                 ['addedByImageUrl'],
                             radius: 12,
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            '${snapshots.data!.docs[index]['addedByUsername']} ${action == TransactionAction.add ? 'added' : 'deleted'}',
+                            '${logsList[index]['addedByUsername']} ${action == TransactionAction.add ? 'added' : 'deleted'}',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
@@ -107,9 +118,9 @@ class LogsScreen extends StatelessWidget {
                   status: TransactionStatus.completed,
                   type: type,
                   paidByImageUrl: paidByImageUrl,
-                  paidByEmail: snapshots.data!.docs[index]['paidByEmail'],
-                  paidByUsername: snapshots.data!.docs[index]['paidByUsername'],
-                  description: snapshots.data!.docs[index]['description'],
+                  paidByEmail: logsList[index]['paidByEmail'],
+                  paidByUsername: logsList[index]['paidByUsername'],
+                  description: logsList[index]['description'],
                   amount: totalAmount.toInt(),
                   amountLent: amountLent.toInt(),
                   timestamp: timestamp,

@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:splitwise_pro/widgets/overview_card.dart';
 
 class OverviewScreen extends StatelessWidget {
-  const OverviewScreen({Key? key}) : super(key: key);
+  const OverviewScreen({Key? key, required this.groupId}) : super(key: key);
+
+  final String groupId;
   @override
   Widget build(BuildContext context) {
     String envSuffix = kReleaseMode ? '-prod' : '-dev';
@@ -15,7 +17,11 @@ class OverviewScreen extends StatelessWidget {
         centerTitle: false,
       ),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('graph$envSuffix').snapshots(),
+        stream: FirebaseFirestore.instance
+                  .collection('graph$envSuffix')
+                  .doc(groupId)
+                  .collection('decoy')
+                  .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

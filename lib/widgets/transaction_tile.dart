@@ -163,7 +163,6 @@ class _TransactionTileState extends State<TransactionTile> {
           }
           setState(() {
             dismissed = dismissUpdateDetails.reached;
-            // id = index;
             progress = dismissUpdateDetails.progress;
           });
         },

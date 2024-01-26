@@ -2,14 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/models/user_from_firestore.dart';
-import 'package:splitwise_pro/screens/tabs.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/util/helper/add_transaction.dart';
 import 'package:splitwise_pro/widgets/dropdown.dart';
 
 class SettleUpScreen extends StatefulWidget {
-  const SettleUpScreen({Key? key}) : super(key: key);
+  const SettleUpScreen({Key? key, required this.setIndex, required this.groupId}) : super(key: key);
+
+  final void Function(int) setIndex;
+  final String groupId;
 
   @override
   State<SettleUpScreen> createState() => _SettleUpScreenState();
@@ -78,6 +80,7 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
         'timestamp': Timestamp.now(),
         'status': TransactionStatus.pending.name,
         'type': TransactionType.payment.name,
+        'groupsId': widget.groupId
       });
     } catch (e) {
       if (context.mounted) {
@@ -95,11 +98,7 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
       _isLoading = false;
     });
 
-    if (context.mounted) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) {
-        return const TabsScreen(index: 0);
-      }));
-    }
+    widget.setIndex(0);
   }
 
   void onChangeFromUser(UserFromFireStore user) {

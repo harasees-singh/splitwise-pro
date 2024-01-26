@@ -11,12 +11,11 @@ import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/widgets/summary_card.dart';
 import 'package:splitwise_pro/widgets/transaction_tile.dart';
-import 'package:splitwise_pro/widgets/user_avatar.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key, required this.groupId}) : super(key: key);
+
+  final String groupId;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -26,29 +25,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final String envSuffix = kReleaseMode ? '-prod' : '-dev';
 
-  void logout () {
-    showDialog(context: context, builder: (ctx) {
-      return AlertDialog(
-        title: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
-        content: Text('We are sorry to see you go :(', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
-        actions: [
-          TextButton(onPressed: () {
-            FirebaseAuth.instance.signOut();
-            Navigator.of(context).pop();
-          }, child: const Text('Logout')),
-          TextButton(onPressed: () {
-            Navigator.of(context).pop();
-          }, child: const Text('Cancel')),
-        ],
-      );
-    }); 
-  }
-
   void _setupPushNotifications() async {
     final fcm = FirebaseMessaging.instance;
     
     await fcm.requestPermission();
     await fcm.subscribeToTopic(FirebaseAuth.instance.currentUser!.email!);
+  }
+
+  List<QueryDocumentSnapshot<dynamic>> getTimeSortedTransactions(List<QueryDocumentSnapshot<dynamic>> transactionsList) {
+    transactionsList.sort((a, b) {
+      Timestamp aTimestamp = a['timestamp'];
+      Timestamp bTimestamp = b['timestamp'];
+      return bTimestamp.compareTo(aTimestamp);
+    });
+    return transactionsList;
   }
 
   @override
@@ -62,32 +52,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Row(
-            children: [
-              UserAvatar(),
-              const SizedBox(width: 10),
-              Text(
-                'Splitwise Pro',
-                style: Theme.of(context).textTheme.titleLarge!,
-              ),
-            ],
+          title: Text(
+            'Transactions',
+            style: Theme.of(context).textTheme.titleLarge!,
           ),
-          actions: [
-            IconButton(
-              onPressed: logout,
-              icon: const Icon(Icons.logout),
-            ),
-          ],
+          
         ),
         body: SizedBox(
           height: MediaQuery.of(context).size.height,
           child: Column(
             children: [
-              const SummaryCard(),
+              SummaryCard(groupId: widget.groupId,),
               StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('transactions$envSuffix')
-                    .orderBy('timestamp', descending: true)
+                    .where('groupId', isEqualTo: widget.groupId)
                     .snapshots(),
                 builder: (ctx, snapshots) {
                   if (snapshots.connectionState == ConnectionState.waiting) {
@@ -119,20 +98,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   }
-                      
+
+                  final transactionsList = getTimeSortedTransactions(snapshots.data!.docs);
+
                   return Expanded(
                     child: ListView.builder(
                       itemCount: snapshots.data!.docs.length,
                       itemBuilder: (ctx, index) {
-                        TransactionStatus status = TransactionStatus.values.byName(snapshots.data!.docs[index]['status']);
-                        TransactionType type = TransactionType.values.byName(snapshots.data!.docs[index]['type']);
-                        String id = snapshots.data!.docs[index].id;
+                        TransactionStatus status = TransactionStatus.values.byName(transactionsList[index]['status']);
+                        TransactionType type = TransactionType.values.byName(transactionsList[index]['type']);
+                        String id = transactionsList[index].id;
                         String paidByImageUrl =
-                            snapshots.data!.docs[index]['paidByImageUrl'];
+                            transactionsList[index]['paidByImageUrl'];
                         Timestamp timestamp =
-                            snapshots.data!.docs[index]['timestamp'];
-                        num totalAmount = snapshots.data!.docs[index]['amount'];
-                        Map<String, dynamic> splitMap = snapshots.data!.docs[index]['split'];
+                            transactionsList[index]['timestamp'];
+                        num totalAmount = transactionsList[index]['amount'];
+                        Map<String, dynamic> splitMap = transactionsList[index]['split'];
                         num amountLent = ((splitMap.containsKey(
                                     FirebaseAuth.instance.currentUser!.email)
                                 ? splitMap[
@@ -140,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : 0) as num) *
                             -1;
                         String paidByEmail =
-                            snapshots.data!.docs[index]['paidByEmail'];
+                            transactionsList[index]['paidByEmail'];
                         if (paidByEmail ==
                             FirebaseAuth.instance.currentUser!.email) {
                           amountLent = totalAmount + amountLent;
@@ -151,10 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           status: status,
                           type: type,
                           paidByImageUrl: paidByImageUrl,
-                          paidByEmail: snapshots.data!.docs[index]['paidByEmail'],
-                          paidByUsername: snapshots.data!.docs[index]
+                          paidByEmail: transactionsList[index]['paidByEmail'],
+                          paidByUsername: transactionsList[index]
                               ['paidByUsername'],
-                          description: snapshots.data!.docs[index]['description'],
+                          description: transactionsList[index]['description'],
                           amount: totalAmount.toInt(),
                           amountLent: amountLent.toInt(),
                           timestamp: timestamp,
@@ -174,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
             HapticFeedback.lightImpact();
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (ctx) => const AddTransactionScreen(),
+                builder: (ctx) => AddTransactionScreen(groupId: widget.groupId,),
               ),
             );
           },
