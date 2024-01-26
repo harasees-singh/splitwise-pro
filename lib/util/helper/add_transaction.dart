@@ -14,7 +14,7 @@ Future addTransactionAndUpdateGraph(
   
   String envSuffix = kReleaseMode ? '-prod' : '-dev';
   final transactionsRef = FirebaseFirestore.instance.collection('transactions$envSuffix');
-  final graphRef = FirebaseFirestore.instance.collection('graph$envSuffix');
+  final graphRef = FirebaseFirestore.instance.collection('graph$envSuffix').doc(transactionDetails['groupId']).collection('decoy');
   final logsRef = FirebaseFirestore.instance.collection('logs$envSuffix');
 
   // cash payment or expense

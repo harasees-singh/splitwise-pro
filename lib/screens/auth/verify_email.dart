@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:splitwise_pro/screens/tabs.dart';
+import 'package:splitwise_pro/screens/groups/groups.dart';
+import 'package:splitwise_pro/screens/tabs/tabs.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({Key? key}) : super(key: key);
@@ -68,7 +69,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   Widget build(BuildContext context) => _isEmailVerified
-      ? TabsScreen()
+      ? const GroupsScreen()
       : Scaffold(
           appBar: AppBar(
               title: Text(

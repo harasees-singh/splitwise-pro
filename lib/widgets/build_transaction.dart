@@ -7,13 +7,15 @@ import 'package:splitwise_pro/models/user_from_firestore.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/util/helper/add_transaction.dart';
+import 'package:splitwise_pro/widgets/button.dart';
 import 'package:splitwise_pro/widgets/transaction_split.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class BuildTransaction extends StatefulWidget {
-  const BuildTransaction({super.key, required this.users});
+  const BuildTransaction({super.key, required this.users, required this.groupId});
   final List<UserFromFireStore> users;
+  final String groupId;
 
   @override
   State<BuildTransaction> createState() => _BuildTransactionState();
@@ -160,6 +162,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
         'timestamp': Timestamp.now(),
         'status': TransactionStatus.pending.name,
         'type': TransactionType.expense.name,
+        'groupId': widget.groupId
       });
     } catch (e) {
       if (context.mounted) {
@@ -316,26 +319,7 @@ class _BuildTransactionState extends State<BuildTransaction> {
               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          )),
-                      onPressed: _recordTransaction,
-                      child: const Text(
-                        'Record transaction',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-            ),
+            Button(isLoading: _isLoading, onSubmit: _recordTransaction, buttonTitle: 'Record Transaction')
           ],
         ),
       ),

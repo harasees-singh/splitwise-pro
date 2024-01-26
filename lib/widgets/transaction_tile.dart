@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:splitwise_pro/screens/transaction_details.dart';
+import 'package:splitwise_pro/screens/transaction/transaction_details.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/util/helper/delete_transaction.dart';
@@ -163,7 +163,6 @@ class _TransactionTileState extends State<TransactionTile> {
           }
           setState(() {
             dismissed = dismissUpdateDetails.reached;
-            // id = index;
             progress = dismissUpdateDetails.progress;
           });
         },
