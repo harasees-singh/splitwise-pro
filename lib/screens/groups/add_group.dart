@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/models/user_from_firestore.dart';
-import 'package:splitwise_pro/screens/search_users.dart';
-import 'package:splitwise_pro/screens/verify_email.dart';
+import 'package:splitwise_pro/screens/groups/search_users.dart';
+import 'package:splitwise_pro/screens/auth/verify_email.dart';
 import 'package:splitwise_pro/widgets/button.dart';
 import 'package:splitwise_pro/widgets/user_tile.dart';
 

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:splitwise_pro/screens/groups.dart';
+import 'package:splitwise_pro/screens/groups/groups.dart';
 import 'package:splitwise_pro/screens/tabs/tabs.dart';
 
 class VerifyEmailScreen extends StatefulWidget {

@@ -6,7 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:splitwise_pro/screens/add_transaction.dart';
+import 'package:splitwise_pro/screens/transaction/add_transaction.dart';
 import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/widgets/summary_card.dart';

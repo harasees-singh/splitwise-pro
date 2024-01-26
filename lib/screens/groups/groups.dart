@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:splitwise_pro/screens/add_group.dart';
+import 'package:splitwise_pro/screens/groups/add_group.dart';
 import 'package:splitwise_pro/screens/tabs/tabs.dart';
 
 class GroupsScreen extends StatelessWidget {
