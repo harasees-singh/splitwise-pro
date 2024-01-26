@@ -9,9 +9,10 @@ import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class LogsScreen extends StatelessWidget {
-  const LogsScreen({Key? key, required this.groupId}) : super(key: key);
+  const LogsScreen({Key? key, required this.groupId, required this.groupName}) : super(key: key);
 
   final String groupId;
+  final String groupName;
   final String envSuffix = kReleaseMode ? '-prod' : '-dev';
 
   List<QueryDocumentSnapshot<dynamic>> getTimeSortedLogs(List<QueryDocumentSnapshot<dynamic>> transactionsList) {
@@ -26,7 +27,7 @@ class LogsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Logs'), centerTitle: false,),
+      appBar: AppBar(title: Text('$groupName : Logs'), centerTitle: false,),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('logs$envSuffix')

@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitwise_pro/screens/add_group.dart';
-import 'package:splitwise_pro/screens/tabs.dart';
+import 'package:splitwise_pro/screens/tabs/tabs.dart';
 
 class GroupsScreen extends StatelessWidget {
   const GroupsScreen({super.key});
@@ -60,6 +60,22 @@ class GroupsScreen extends StatelessWidget {
               );
             }
             final groups = snapshot.data!.docs;
+
+            if (groups.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.all(50),
+                child: Center(
+                  child: Text(
+                    'You are\'nt part of any groups yet, try creating one!',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(color: Theme.of(context).colorScheme.secondary),
+                  ),
+                ),
+              );
+            }
             return ListView.builder(
               itemCount: groups.length,
               itemBuilder: (ctx, index) => ListTile(
@@ -73,7 +89,7 @@ class GroupsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => TabsScreen(groupId: groups[index].id),
+                      builder: (ctx) => TabsScreen(groupId: groups[index].id, groupName: groups[index]['name']),
                     ),
                   );
                 },

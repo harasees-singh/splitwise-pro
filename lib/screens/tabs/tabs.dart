@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:splitwise_pro/screens/home.dart';
-import 'package:splitwise_pro/screens/logs.dart';
-import 'package:splitwise_pro/screens/overview.dart';
-import 'package:splitwise_pro/screens/settle_up.dart';
+import 'package:splitwise_pro/screens/tabs/home.dart';
+import 'package:splitwise_pro/screens/tabs/logs.dart';
+import 'package:splitwise_pro/screens/tabs/overview.dart';
+import 'package:splitwise_pro/screens/tabs/settle_up.dart';
 
 class TabsScreen extends StatefulWidget {
-  const TabsScreen({super.key, this.index, required this.groupId});
+  const TabsScreen({super.key, this.index, required this.groupId, required this.groupName});
 
   final int? index;
   final String groupId;
+  final String groupName;
   @override
   State<TabsScreen> createState() => _TabsScreenState();
 }
@@ -31,16 +32,22 @@ class _TabsScreenState extends State<TabsScreen> {
       _currentIndex = widget.index!;
     }
     _tabs = [
-      HomeScreen(groupId: widget.groupId),
+      HomeScreen(
+        groupId: widget.groupId,
+        groupName: widget.groupName,
+      ),
       SettleUpScreen(
         setIndex: setIndex,
         groupId: widget.groupId,
+        groupName: widget.groupName,
       ),
       OverviewScreen(
         groupId: widget.groupId,
+        groupName: widget.groupName,
       ),
       LogsScreen(
         groupId: widget.groupId,
+        groupName: widget.groupName,
       ),
     ];
   }

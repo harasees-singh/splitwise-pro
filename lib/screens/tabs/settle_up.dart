@@ -8,10 +8,11 @@ import 'package:splitwise_pro/util/helper/add_transaction.dart';
 import 'package:splitwise_pro/widgets/dropdown.dart';
 
 class SettleUpScreen extends StatefulWidget {
-  const SettleUpScreen({Key? key, required this.setIndex, required this.groupId}) : super(key: key);
+  const SettleUpScreen({Key? key, required this.setIndex, required this.groupId, required this.groupName}) : super(key: key);
 
   final void Function(int) setIndex;
   final String groupId;
+  final String groupName;
 
   @override
   State<SettleUpScreen> createState() => _SettleUpScreenState();
@@ -141,7 +142,7 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settle Up'),
+        title: Text('${widget.groupName} : Settle Up'),
         centerTitle: false,
       ),
       body: Padding(

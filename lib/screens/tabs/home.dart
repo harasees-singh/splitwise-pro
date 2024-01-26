@@ -13,9 +13,10 @@ import 'package:splitwise_pro/widgets/summary_card.dart';
 import 'package:splitwise_pro/widgets/transaction_tile.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key, required this.groupId}) : super(key: key);
+  const HomeScreen({Key? key, required this.groupId, required this.groupName}) : super(key: key);
 
   final String groupId;
+  final String groupName;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -52,11 +53,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
+          centerTitle: false,
           title: Text(
-            'Transactions',
+            '${widget.groupName} : Transactions',
             style: Theme.of(context).textTheme.titleLarge!,
           ),
-          
         ),
         body: SizedBox(
           height: MediaQuery.of(context).size.height,
