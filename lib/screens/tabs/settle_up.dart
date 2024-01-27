@@ -81,7 +81,7 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
         'timestamp': Timestamp.now(),
         'status': TransactionStatus.pending.name,
         'type': TransactionType.payment.name,
-        'groupsId': widget.groupId
+        'groupId': widget.groupId
       });
     } catch (e) {
       if (context.mounted) {
