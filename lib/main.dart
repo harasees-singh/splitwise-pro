@@ -23,7 +23,7 @@ void main() async {
 }
 
 var kColorScheme =
-    ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 2, 69, 125));
+    ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 2, 69, 125));
 
 var kDarkColorScheme = ColorScheme.fromSeed(
     seedColor: const Color.fromARGB(255, 0, 46, 67),

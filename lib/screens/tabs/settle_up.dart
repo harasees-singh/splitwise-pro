@@ -6,6 +6,7 @@ import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/util/helper/add_transaction.dart';
 import 'package:splitwise_pro/widgets/dropdown.dart';
+import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class SettleUpScreen extends StatefulWidget {
   const SettleUpScreen({Key? key, required this.setIndex, required this.groupId, required this.groupName}) : super(key: key);
@@ -115,7 +116,9 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
   }
 
   Future _fetchUsers() async {
-    _fetchedUsers = await FirebaseFirestore.instance.collection('users').get();
+    final group = (await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).get()).data();
+    _fetchedUsers = await FirebaseFirestore.instance.collection('users').where('email', whereIn: group!['users']).get();
+
     _users = _fetchedUsers.docs
         .map((userSnapshot) => UserFromFireStore.fromSnapshot(userSnapshot))
         .toList();
@@ -144,6 +147,10 @@ class _SettleUpScreenState extends State<SettleUpScreen> {
       appBar: AppBar(
         title: Text('${widget.groupName} : Settle Up'),
         centerTitle: false,
+        actions: [Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: UserAvatar(imageURL: FirebaseAuth.instance.currentUser!.photoURL,),
+          )],
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),

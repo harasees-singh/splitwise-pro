@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:splitwise_pro/widgets/overview_card.dart';
+import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class OverviewScreen extends StatelessWidget {
   const OverviewScreen({Key? key, required this.groupId, required this.groupName}) : super(key: key);
@@ -16,6 +17,10 @@ class OverviewScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('$groupName : Overview'),
         centerTitle: false,
+        actions: [Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: UserAvatar(imageURL: FirebaseAuth.instance.currentUser!.photoURL,),
+          )],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance

@@ -11,6 +11,7 @@ import 'package:splitwise_pro/util/enums/transaction_status.dart';
 import 'package:splitwise_pro/util/enums/transaction_type.dart';
 import 'package:splitwise_pro/widgets/summary_card.dart';
 import 'package:splitwise_pro/widgets/transaction_tile.dart';
+import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.groupId, required this.groupName}) : super(key: key);
@@ -58,6 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
             '${widget.groupName} : Transactions',
             style: Theme.of(context).textTheme.titleLarge!,
           ),
+          actions: [Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: UserAvatar(imageURL: FirebaseAuth.instance.currentUser!.photoURL,),
+          )],
         ),
         body: SizedBox(
           height: MediaQuery.of(context).size.height,

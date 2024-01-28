@@ -9,13 +9,15 @@ import 'package:splitwise_pro/widgets/transaction_tile.dart';
 import 'package:splitwise_pro/widgets/user_avatar.dart';
 
 class LogsScreen extends StatelessWidget {
-  const LogsScreen({Key? key, required this.groupId, required this.groupName}) : super(key: key);
+  const LogsScreen({Key? key, required this.groupId, required this.groupName})
+      : super(key: key);
 
   final String groupId;
   final String groupName;
   final String envSuffix = kReleaseMode ? '-prod' : '-dev';
 
-  List<QueryDocumentSnapshot<dynamic>> getTimeSortedLogs(List<QueryDocumentSnapshot<dynamic>> transactionsList) {
+  List<QueryDocumentSnapshot<dynamic>> getTimeSortedLogs(
+      List<QueryDocumentSnapshot<dynamic>> transactionsList) {
     transactionsList.sort((a, b) {
       Timestamp aTimestamp = a['timestamp'];
       Timestamp bTimestamp = b['timestamp'];
@@ -27,7 +29,18 @@ class LogsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('$groupName : Logs'), centerTitle: false,),
+      appBar: AppBar(
+        title: Text('$groupName : Logs'),
+        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: UserAvatar(
+              imageURL: FirebaseAuth.instance.currentUser!.photoURL,
+            ),
+          )
+        ],
+      ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('logs$envSuffix')
@@ -59,22 +72,21 @@ class LogsScreen extends StatelessWidget {
             );
           }
 
-          List<QueryDocumentSnapshot<dynamic>> logsList = getTimeSortedLogs(snapshots.data!.docs);
+          List<QueryDocumentSnapshot<dynamic>> logsList =
+              getTimeSortedLogs(snapshots.data!.docs);
 
           return ListView.builder(
             itemCount: snapshots.data!.docs.length,
             itemBuilder: (ctx, index) {
-              TransactionAction action = TransactionAction.values
-                  .byName(logsList[index]['action']);
-              TransactionType type = TransactionType.values
-                  .byName(logsList[index]['type']);
+              TransactionAction action =
+                  TransactionAction.values.byName(logsList[index]['action']);
+              TransactionType type =
+                  TransactionType.values.byName(logsList[index]['type']);
               String id = logsList[index].id;
-              String paidByImageUrl =
-                  logsList[index]['paidByImageUrl'];
+              String paidByImageUrl = logsList[index]['paidByImageUrl'];
               Timestamp timestamp = logsList[index]['timestamp'];
               num totalAmount = logsList[index]['amount'];
-              Map<String, dynamic> splitMap =
-                  logsList[index]['split'];
+              Map<String, dynamic> splitMap = logsList[index]['split'];
               num amountLent = ((splitMap
                           .containsKey(FirebaseAuth.instance.currentUser!.email)
                       ? splitMap[FirebaseAuth.instance.currentUser!.email]
@@ -94,8 +106,7 @@ class LogsScreen extends StatelessWidget {
                       Row(
                         children: [
                           UserAvatar(
-                            imageURL: logsList[index]
-                                ['addedByImageUrl'],
+                            imageURL: logsList[index]['addedByImageUrl'],
                             radius: 12,
                           ),
                           const SizedBox(width: 10),
